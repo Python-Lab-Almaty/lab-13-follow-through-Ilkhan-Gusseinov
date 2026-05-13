@@ -2,6 +2,7 @@ import turtle
 import random
 import time
 import hashlib
+import pygame
 import os
 import json
 
@@ -135,6 +136,10 @@ screen.setup(WIDTH, HEIGHT)
 screen.title(f"Red Riding Hood Mission - {student_name}")
 screen.bgcolor("white")
 screen.tracer(0)
+timer_turtle = turtle.Turtle()
+timer_turtle.hideturtle()
+timer_turtle.penup()
+timer_turtle.goto(0, HEIGHT//2 - 100)
 
 # ----------------------------
 # 🟢 ГЕРОЙ
@@ -312,14 +317,6 @@ def check_collision():
 # ----------------------------
 # 🟢 УПРАВЛЕНИЕ (БЕЗ ЧЕКПОИНТОВ!)
 # ----------------------------
-def move_forward():
-    global steps
-    hero.pendown()
-    hero.forward(MOVE_SPEED)
-    hero.penup()
-    steps += 1
-    log_move("forward")
-
 def up():
     global steps
     hero.sety(hero.ycor() + vy)
@@ -414,6 +411,19 @@ screen.update()
 obstacles_spawned_count = 0
 start_time = time.time()
 
+def init_audio():
+    if not pygame.mixer.get_init():
+        pygame.mixer.init()
+
+def play_goal_sound():
+    try:
+        init_audio()
+        sound = pygame.mixer.Sound("success.wav")
+        sound.play()
+    except FileNotFoundError:
+        print("📁 Файл success.wav не найден в папке с игрой")
+    except Exception as e:
+        print(f"⚠️ Ошибка pygame: {e}")
 # 🟢 ЛОГИРОВАНИЕ СТАРТА
 log.append({
     "event": "game_start",
@@ -434,6 +444,11 @@ print(f"\n🔴 КРАСНЫЕ = штраф -10")
 print(f"🟢 ЗЕЛЁНЫЕ = GAME OVER (появляются на обратном пути)")
 
 while True:
+    elapsed = time.time() - start_time
+    mins, secs = divmod(elapsed, 60)
+    timer_turtle.clear()
+    timer_turtle.write(f"⏱️ {int(mins):02d}:{secs:05.2f}", 
+                       align="center", font=("Courier", 16, "bold"))
     # 🟢 ФАЗА 2: На обратном пути
     if not going_forward:
         spawn_chance = 0.02 + (vx + vy) / 60
@@ -453,6 +468,7 @@ while True:
     if going_forward and abs(hero.xcor() - goal[0]) < 40 and abs(hero.ycor() - goal[1]) < 40:
         print("🎯 Reached B! RETURN TO A!")
         print(f"🟢 Теперь будут появляться препятствия!")
+        play_goal_sound()
         going_forward = False
         hero.color('yellow')
 
