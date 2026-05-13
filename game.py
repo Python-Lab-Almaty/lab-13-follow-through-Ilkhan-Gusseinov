@@ -145,6 +145,8 @@ hero.color("red")
 hero.penup()
 hero.goto(start)
 hero.shapesize(2, 2)
+hero_direction = 0
+hero.setheading(hero_direction)
 
 # ----------------------------
 # 🟢 ПРЕПЯТСТВИЯ
@@ -163,6 +165,7 @@ life = 3
 # ----------------------------
 vx = 3
 vy = 3
+TURN_SPEED, MOVE_SPEED = 15, 3
 
 # ----------------------------
 # 🟢 РЕЖИМ
@@ -309,6 +312,14 @@ def check_collision():
 # ----------------------------
 # 🟢 УПРАВЛЕНИЕ (БЕЗ ЧЕКПОИНТОВ!)
 # ----------------------------
+def move_forward():
+    global steps
+    hero.pendown()
+    hero.forward(MOVE_SPEED)
+    hero.penup()
+    steps += 1
+    log_move("forward")
+
 def up():
     global steps
     hero.sety(hero.ycor() + vy)
@@ -361,6 +372,18 @@ def right():
         "time": time.time()
     })
 
+def move_smooth():
+    global steps
+    hero.forward(MOVE_SPEED)
+    steps += 1
+    log.append({"event": "move", "x": hero.xcor(), "y": hero.ycor(), 
+                "heading": hero_direction, "time": time.time()})
+
+def rotate(angle_change):
+    global hero_direction
+    hero_direction = (hero_direction + angle_change) % 360
+    hero.setheading(hero_direction)
+
 def reset_session():
     clear_session(student_name)
     print("🔄 Сессия сброшена. Перезапустите игру.")
@@ -375,6 +398,12 @@ screen.onkey(down, "s")
 screen.onkey(left, "a")
 screen.onkey(right, "d")
 screen.onkey(reset_session, "r")
+screen.onkey(move_smooth, "Up")
+screen.onkey(move_smooth, "w")
+screen.onkey(lambda: rotate(TURN_SPEED), "Left")
+screen.onkey(lambda: rotate(TURN_SPEED), "a")
+screen.onkey(lambda: rotate(-TURN_SPEED), "Right")
+screen.onkey(lambda: rotate(-TURN_SPEED), "d")
 
 # ----------------------------
 # 🟢 ОСНОВНОЙ ЦИКЛ
