@@ -141,6 +141,7 @@ timer_turtle.hideturtle()
 timer_turtle.penup()
 timer_turtle.goto(0, HEIGHT//2 - 100)
 
+
 # ----------------------------
 # 🟢 ГЕРОЙ
 # ----------------------------
